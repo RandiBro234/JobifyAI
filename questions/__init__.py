@@ -6,7 +6,6 @@ from .frontend_developer import QUESTIONS as FE_QUESTIONS
 from .ml_engineer import QUESTIONS as ML_QUESTIONS
 from .mobile_developer import QUESTIONS as MOB_QUESTIONS
 
-# List role yang muncul di dropdown login
 ROLES = [
     "Data Scientist",
     "Data Engineer",
@@ -27,7 +26,6 @@ ROLE_QUESTION_MAP = {
     "mobile developer": MOB_QUESTIONS,
 }
 
-# default: pakai pertanyaan Data Scientist
 DEFAULT_QUESTIONS = DS_QUESTIONS
 
 

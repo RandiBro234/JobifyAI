@@ -10,7 +10,9 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 
-from questions import get_questions_for_role, ROLES  # import dari folder questions
+from questions import get_questions_for_role, ROLES
+from answer_keys import get_ideal_answers
+from text_scoring import tfidf_cosine_score, similarity_to_score
 
 app = Flask(__name__)
 
@@ -20,7 +22,7 @@ BASE_DIR = os.path.dirname(__file__)
 app.config["UPLOAD_FOLDER"] = os.path.join(BASE_DIR, "uploads")
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-# Dummy data untuk dashboard
+# Dummy data dashboard
 DASHBOARD_STATS = {
     "total_sessions": 12,
     "avg_score": 80.7,
@@ -88,7 +90,7 @@ def dashboard():
     )
 
 
-# ========== INTERVIEW PAGE ==========
+# ========== INTERVIEW ==========
 @app.route("/interview")
 def interview():
     if "user_name" not in session or "user_role" not in session:
@@ -96,12 +98,9 @@ def interview():
 
     role = session.get("user_role", "")
     question_list = get_questions_for_role(role)
-
     if not question_list:
-        # fallback kalau ada role aneh
         question_list = get_questions_for_role("default")
 
-    # simpan di session panjang list pertanyaan (opsional)
     session["total_questions"] = len(question_list)
 
     first_question = question_list[0]
@@ -114,11 +113,13 @@ def interview():
     )
 
 
-# ========== API EVALUASI JAWABAN ==========
+# ========== API EVALUATE (TF-IDF + COSINE) ==========
 @app.route("/api/evaluate", methods=["POST"])
 def evaluate_answer():
     if "user_role" not in session:
-        return jsonify({"success": False, "message": "Session sudah habis, silakan login ulang."})
+        return jsonify(
+            {"success": False, "message": "Session sudah habis, silakan login ulang."}
+        )
 
     data = request.get_json()
     answer_text = data.get("answer", "").strip()
@@ -134,25 +135,36 @@ def evaluate_answer():
 
     total_questions = len(question_list)
 
-    # Pastikan index tidak out of range
+    # jaga index tetap di range
     if question_index < 0:
         question_index = 0
     if question_index >= total_questions:
         question_index = total_questions - 1
 
-    # ====== LOGIKA SCORING DUMMY (boleh kamu ganti pakai model NLP) ======
-    length = len(answer_text.split())
-    if length < 10:
-        score = 55
-        feedback = "Jawaban terlalu singkat. Tambahkan detail dan contoh konkret."
-    elif length < 40:
-        score = 75
-        feedback = "Jawaban cukup baik. Coba tambah struktur yang jelas (situasi, aksi, hasil)."
-    else:
-        score = 90
-        feedback = "Jawaban sangat lengkap dan terstruktur. Pertahankan cara menjawab seperti ini."
-    # ====================================================================
+    # ====== Ambil jawaban ideal & hitung similarity ======
+    ideal_answers = get_ideal_answers(role, question_index)
+    similarity = tfidf_cosine_score(answer_text, ideal_answers)
+    score = similarity_to_score(similarity)
 
+    # Buat feedback sederhana berdasarkan skor + panjang jawaban
+    word_count = len(answer_text.split())
+    if word_count < 10:
+        extra_feedback = "Jawaban masih terlalu singkat. Coba tambahkan detail dan contoh konkret."
+    elif word_count < 30:
+        extra_feedback = "Jawaban sudah cukup, tapi masih bisa diperdalam dengan struktur yang lebih jelas."
+    else:
+        extra_feedback = "Panjang jawaban sudah baik. Pertahankan struktur dan kejelasan seperti ini."
+
+    if score < 60:
+        level_feedback = "Relevansi jawaban terhadap pertanyaan masih rendah."
+    elif score < 80:
+        level_feedback = "Jawaban sudah cukup relevan tetapi masih bisa ditingkatkan."
+    else:
+        level_feedback = "Jawaban sangat relevan dengan poin-poin penting pertanyaan."
+
+    feedback = f"{level_feedback} {extra_feedback}"
+
+    # ====== Pertanyaan berikutnya ======
     next_question_index = question_index + 1
     if next_question_index < total_questions:
         next_question = question_list[next_question_index]
