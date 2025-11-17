@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Sesi Wawancara</h1>
+      <p class="page-subtitle">
+        Jawab pertanyaan di bawah ini menggunakan suara atau teks. Jobify.ai akan memberikan skor dan feedback otomatis.
+      </p>
+    </div>
+    <div class="mode-toggle">
+      <button id="voiceModeBtn" class="toggle-btn toggle-btn-active">Jawab dengan Suara</button>
+      <button id="textModeBtn" class="toggle-btn">Jawab dengan Teks</button>
+    </div>
+  </header>
+
+  <section class="interview-container">
+    <div class="question-card">
+      <div class="question-label">Pertanyaan</div>
+      <div id="questionText" class="question-text">{{ question }}</div>
+      <div class="question-meta">
+        <span id="questionIndexText">Pertanyaan 1 dari {{ total_questions }}</span>
+      </div>
+    </div>
+
+    <!-- MODE SUARA -->
+    <div id="voiceMode" class="answer-mode">
+      <p class="mode-helper">
+        Tekan tombol mikrofon untuk mulai/berhenti merekam jawaban Anda.
+      </p>
+      <button id="micButton" class="primary-btn">
+        <span class="mic-icon">🎤</span>
+        <span id="micLabel">Mulai Rekam</span>
+      </button>
+      <p id="voiceStatus" class="status-text"></p>
+    </div>
+
+    <!-- MODE TEKS -->
+    <div id="textMode" class="answer-mode answer-mode-hidden">
+      <label class="input-label" for="textAnswer">Jawaban Teks Anda</label>
+      <textarea id="textAnswer" class="text-area" rows="6"
+        placeholder="Tulis jawaban Anda di sini..."></textarea>
+      <button id="submitTextAnswer" class="primary-btn submit-btn">
+        Kirim Jawaban
+      </button>
+      <p class="small-note">*Untuk proyek text mining, Anda bisa menggunakan jawaban ini sebagai input ke model AI.</p>
+    </div>
+
+    <div id="resultCard" class="result-card result-hidden">
+      <div class="result-score">
+        Skor: <span id="resultScore"></span>/100
+      </div>
+      <div class="result-feedback-label">Feedback:</div>
+      <p id="resultFeedback"></p>
+
+      <div class="result-actions">
+        <button id="nextQuestionBtn" class="secondary-btn">Pertanyaan Berikutnya</button>
+        <a href="{{ url_for('dashboard') }}" class="link-btn">Kembali ke Dashboard</a>
+      </div>
+    </div>
+  </section>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const TOTAL_QUESTIONS = {{ total_questions }};
+</script>
+<script src="{{ url_for('static', filename='js/interview.js') }}"></script>
+{% endblock %}

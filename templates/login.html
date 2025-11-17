@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login - Jobify.ai</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+</head>
+
+<body class="login-body">
+
+  <div class="login-wrapper">
+    <div class="login-card">
+
+      <div class="login-logo">
+        <div class="login-logo-circle">J</div>
+        <div class="login-logo-text">
+          <div class="login-logo-title">Jobify.ai</div>
+          <div class="login-logo-subtitle">AI-based Mock Interview</div>
+        </div>
+      </div>
+
+      <h1 class="login-title">Masuk ke Jobify.ai</h1>
+      <p class="login-subtitle">Isi data singkat berikut untuk memulai sesi Anda.</p>
+
+      {% if error %}
+      <div class="login-error">{{ error }}</div>
+      {% endif %}
+
+      <form method="POST" enctype="multipart/form-data" class="login-form">
+
+        <!-- Nama -->
+        <div class="form-group">
+          <label for="name">Nama Lengkap<span class="required">*</span></label>
+          <input type="text" id="name" name="name" required placeholder="Misal: Randi Pratama" />
+        </div>
+
+        <!-- Role -->
+        <div class="form-group">
+          <label for="role">Role yang Dilamar<span class="required">*</span></label>
+          <select id="role" name="role" required class="dropdown-input">
+            <option value="">-- Pilih Role --</option>
+
+            {% for r in roles %}
+            <option value="{{ r }}">{{ r }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- CV -->
+        <div class="form-group">
+          <label for="cv">Upload CV (opsional)</label>
+          <input type="file" id="cv" name="cv" accept=".pdf,.doc,.docx" />
+          <p class="form-helper">CV dapat dianalisis oleh AI (opsional).</p>
+        </div>
+
+        <button type="submit" class="primary-btn login-btn">Masuk ke Dashboard</button>
+
+      </form>
+
+    </div>
+  </div>
+
+</body>
+</html>

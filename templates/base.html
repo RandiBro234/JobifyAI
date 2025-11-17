@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ title if title else "Jobify.ai" }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+
+  <!-- Chart.js (dipakai di dashboard) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-circle">J</div>
+        <div class="logo-text">
+          <div class="logo-title">Jobify.AI</div>
+          <div class="logo-subtitle">Mock Interview</div>
+        </div>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="user-avatar">
+          {{ (user_name or 'U')[0] | upper }}
+        </div>
+        <div class="user-text">
+          <div class="user-hello">
+            Hallo, {{ user_name or 'Kandidat' }}!
+          </div>
+          <div class="user-role">
+            {{ user_role or 'Calon Kandidat' }}
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="{{ url_for('dashboard') }}"
+           class="nav-item {% if request.path == '/' %}nav-item-active{% endif %}">
+          <span>Dashboard</span>
+        </a>
+        <a href="{{ url_for('interview') }}"
+           class="nav-item {% if '/interview' in request.path %}nav-item-active{% endif %}">
+          <span>Hasil dan Feedback</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="{{ url_for('logout') }}" class="logout-btn">Log-out</a>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

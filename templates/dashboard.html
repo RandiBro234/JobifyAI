@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Selamat Datang Kembali, Randi!</h1>
+      <p class="page-subtitle">
+        Siap untuk latihan berikutnya? Asah kemampuan wawancara Anda dengan Jobify.ai.
+      </p>
+    </div>
+
+    <a href="{{ url_for('interview') }}" class="primary-btn">
+      <span class="mic-icon">🎤</span>
+      Mulai Wawancara Baru
+    </a>
+  </header>
+
+  <section class="cards-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Latihan</div>
+      <div class="stat-value">{{ stats.total_sessions }} Sesi</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Rata-Rata Skor</div>
+      <div class="stat-value">{{ stats.avg_score }}/100</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Skor Tertinggi</div>
+      <div class="stat-value">{{ stats.best_score }}/100</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Latihan Beruntun</div>
+      <div class="stat-value">{{ stats.streak_days }} Hari</div>
+    </div>
+  </section>
+
+  <section class="chart-section">
+    <div class="chart-header">Grafik Perkembangan</div>
+    <canvas id="progressChart"></canvas>
+  </section>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const scores = {{ scores | safe }};
+  const ctx = document.getElementById('progressChart');
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: scores.map((_, i) => 'Sesi ' + (i + 1)),
+      datasets: [{
+        label: 'Nilai',
+        data: scores,
+        fill: false,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          min: 0,
+          max: 100
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}
