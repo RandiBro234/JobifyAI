@@ -8,17 +8,19 @@ from flask import (
     url_for,
     session,
 )
-
 from werkzeug.utils import secure_filename
+
+from questions import get_questions_for_role, ROLES  # import dari folder questions
 
 app = Flask(__name__)
 
-# ====== CONFIG ======
-app.config["SECRET_KEY"] = "ganti_ini_secret_keymu"
-app.config["UPLOAD_FOLDER"] = os.path.join(os.path.dirname(__file__), "uploads")
+# ========== CONFIG ==========
+app.config["SECRET_KEY"] = "ganti_ini_dengan_secret_keymu"
+BASE_DIR = os.path.dirname(__file__)
+app.config["UPLOAD_FOLDER"] = os.path.join(BASE_DIR, "uploads")
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-# Dummy data
+# Dummy data untuk dashboard
 DASHBOARD_STATS = {
     "total_sessions": 12,
     "avg_score": 80.7,
@@ -27,27 +29,8 @@ DASHBOARD_STATS = {
     "progress_scores": [67, 75, 84, 78, 89, 82, 91],
 }
 
-# List pertanyaan wawancara
-QUESTIONS = [
-    "Ceritakan tentang diri Anda.",
-    "Apa kelebihan utama yang Anda miliki?",
-    "Ceritakan pengalaman ketika Anda memecahkan masalah sulit.",
-    "Apa alasan kami harus menerima Anda di Jobify.ai?",
-]
 
-# Roles yang muncul di dropdown
-ROLES = [
-    "Data Scientist",
-    "Data Engineer",
-    "Web Developer",
-    "Backend Developer",
-    "Frontend Developer",
-    "Machine Learning Engineer",
-    "Mobile Developer",
-]
-
-
-# ======= CONTEXT PROCESSOR =======
+# ========== CONTEXT PROCESSOR ==========
 @app.context_processor
 def inject_user():
     return dict(
@@ -57,7 +40,7 @@ def inject_user():
     )
 
 
-# ======= LOGIN PAGE =======
+# ========== LOGIN ==========
 @app.route("/login", methods=["GET", "POST"])
 def login():
     error = None
@@ -85,17 +68,16 @@ def login():
     return render_template("login.html", roles=ROLES, error=error)
 
 
-# ======= LOGOUT =======
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("login"))
 
 
-# ======= DASHBOARD =======
+# ========== DASHBOARD ==========
 @app.route("/")
 def dashboard():
-    if "user_name" not in session:
+    if "user_name" not in session or "user_role" not in session:
         return redirect(url_for("login"))
 
     return render_template(
@@ -106,48 +88,74 @@ def dashboard():
     )
 
 
-# ======= INTERVIEW =======
+# ========== INTERVIEW PAGE ==========
 @app.route("/interview")
 def interview():
-    if "user_name" not in session:
+    if "user_name" not in session or "user_role" not in session:
         return redirect(url_for("login"))
 
-    first_question = QUESTIONS[0]
+    role = session.get("user_role", "")
+    question_list = get_questions_for_role(role)
+
+    if not question_list:
+        # fallback kalau ada role aneh
+        question_list = get_questions_for_role("default")
+
+    # simpan di session panjang list pertanyaan (opsional)
+    session["total_questions"] = len(question_list)
+
+    first_question = question_list[0]
 
     return render_template(
         "interview.html",
         question=first_question,
-        total_questions=len(QUESTIONS),
+        total_questions=len(question_list),
         title="Wawancara - Jobify.ai",
     )
 
 
-# ======= API EVALUATE =======
+# ========== API EVALUASI JAWABAN ==========
 @app.route("/api/evaluate", methods=["POST"])
 def evaluate_answer():
+    if "user_role" not in session:
+        return jsonify({"success": False, "message": "Session sudah habis, silakan login ulang."})
+
     data = request.get_json()
     answer_text = data.get("answer", "").strip()
-    q_index = data.get("question_index", 0)
+    question_index = int(data.get("question_index", 0))
 
     if not answer_text:
         return jsonify({"success": False, "message": "Jawaban masih kosong."})
 
-    # Dummy model scoring
+    role = session.get("user_role", "")
+    question_list = get_questions_for_role(role)
+    if not question_list:
+        question_list = get_questions_for_role("default")
+
+    total_questions = len(question_list)
+
+    # Pastikan index tidak out of range
+    if question_index < 0:
+        question_index = 0
+    if question_index >= total_questions:
+        question_index = total_questions - 1
+
+    # ====== LOGIKA SCORING DUMMY (boleh kamu ganti pakai model NLP) ======
     length = len(answer_text.split())
     if length < 10:
         score = 55
-        feedback = "Jawaban terlalu singkat. Tambah detail & contoh."
+        feedback = "Jawaban terlalu singkat. Tambahkan detail dan contoh konkret."
     elif length < 40:
         score = 75
-        feedback = "Cukup baik, tapi masih bisa dibuat lebih terstruktur."
+        feedback = "Jawaban cukup baik. Coba tambah struktur yang jelas (situasi, aksi, hasil)."
     else:
         score = 90
-        feedback = "Sangat lengkap & jelas. Pertahankan!"
+        feedback = "Jawaban sangat lengkap dan terstruktur. Pertahankan cara menjawab seperti ini."
+    # ====================================================================
 
-    # Next question
-    next_index = q_index + 1
-    if next_index < len(QUESTIONS):
-        next_question = QUESTIONS[next_index]
+    next_question_index = question_index + 1
+    if next_question_index < total_questions:
+        next_question = question_list[next_question_index]
         has_next = True
     else:
         next_question = None
@@ -160,10 +168,10 @@ def evaluate_answer():
             "feedback": feedback,
             "has_next": has_next,
             "next_question": next_question,
-            "next_question_index": next_index,
+            "next_question_index": next_question_index,
         }
     )
 
 
 if __name__ == "__main__":
-    app.run(port=7070, host='0.0.0.0', debug=True)
+    app.run(host="0.0.0.0", port=7070, debug=True)

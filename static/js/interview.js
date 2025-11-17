@@ -83,7 +83,7 @@ if (submitTextAnswer) {
   });
 }
 
-// ===== VOICE ANSWER HANDLING (opsional) =====
+// ===== VOICE ANSWER HANDLING =====
 const micButton = document.getElementById("micButton");
 const micLabel = document.getElementById("micLabel");
 const voiceStatus = document.getElementById("voiceStatus");
@@ -113,7 +113,7 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
       finalTranscript += event.results[i][0].transcript + " ";
     }
     recordedText = finalTranscript.trim();
-    voiceStatus.textContent = "Hasil rekaman: \"" + recordedText + "\"";
+    voiceStatus.textContent = 'Hasil rekaman: "' + recordedText + '"';
   };
 
   recognition.onend = () => {
@@ -121,7 +121,6 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
     micLabel.textContent = "Mulai Rekam";
 
     if (recordedText) {
-      // Kirim hasil suara sebagai teks ke endpoint yang sama (text mining)
       sendAnswer(recordedText);
     } else {
       voiceStatus.textContent = "Tidak ada suara yang terekam.";

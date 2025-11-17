@@ -1,13 +1,15 @@
 {% extends "base.html" %}
+
 {% block content %}
 <section class="page">
   <header class="page-header">
     <div>
-      <h1 class="page-title">Sesi Wawancara</h1>
+      <h1 class="page-title">Sesi Wawancara - {{ user_role }}</h1>
       <p class="page-subtitle">
-        Jawab pertanyaan di bawah ini menggunakan suara atau teks. Jobify.ai akan memberikan skor dan feedback otomatis.
+        Jawab pertanyaan berikut menggunakan suara atau teks. Jobify.ai akan memberikan skor dan feedback otomatis.
       </p>
     </div>
+
     <div class="mode-toggle">
       <button id="voiceModeBtn" class="toggle-btn toggle-btn-active">Jawab dengan Suara</button>
       <button id="textModeBtn" class="toggle-btn">Jawab dengan Teks</button>
@@ -43,7 +45,9 @@
       <button id="submitTextAnswer" class="primary-btn submit-btn">
         Kirim Jawaban
       </button>
-      <p class="small-note">*Untuk proyek text mining, Anda bisa menggunakan jawaban ini sebagai input ke model AI.</p>
+      <p class="small-note">
+        Jawaban teks ini bisa digunakan sebagai dataset untuk proyek text mining Anda.
+      </p>
     </div>
 
     <div id="resultCard" class="result-card result-hidden">

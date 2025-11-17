@@ -16,7 +16,7 @@
   <!-- Main CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
 
-  <!-- Chart.js (dipakai di dashboard) -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -36,12 +36,8 @@
           {{ (user_name or 'U')[0] | upper }}
         </div>
         <div class="user-text">
-          <div class="user-hello">
-            Hallo, {{ user_name or 'Kandidat' }}!
-          </div>
-          <div class="user-role">
-            {{ user_role or 'Calon Kandidat' }}
-          </div>
+          <div class="user-hello">Hallo, {{ user_name or 'Kandidat' }}!</div>
+          <div class="user-role">{{ user_role or 'Calon Kandidat' }}</div>
         </div>
       </div>
 
