@@ -6,13 +6,18 @@
     <div>
       <h1 class="page-title">Sesi Wawancara - {{ user_role }}</h1>
       <p class="page-subtitle">
-        Jawab pertanyaan berikut menggunakan suara atau teks. Jobify.ai akan memberikan skor dan feedback otomatis.
+        Jawab pertanyaan berikut menggunakan suara atau teks. Jobify.ai akan memberikan skor
+        dan feedback otomatis untuk setiap jawaban, serta ringkasan hasil di akhir sesi.
       </p>
     </div>
 
     <div class="mode-toggle">
-      <button id="voiceModeBtn" class="toggle-btn toggle-btn-active">Jawab dengan Suara</button>
-      <button id="textModeBtn" class="toggle-btn">Jawab dengan Teks</button>
+      <button id="voiceModeBtn" class="toggle-btn toggle-btn-active">
+        Jawab dengan Suara
+      </button>
+      <button id="textModeBtn" class="toggle-btn">
+        Jawab dengan Teks
+      </button>
     </div>
   </header>
 
@@ -40,8 +45,12 @@
     <!-- MODE TEKS -->
     <div id="textMode" class="answer-mode answer-mode-hidden">
       <label class="input-label" for="textAnswer">Jawaban Teks Anda</label>
-      <textarea id="textAnswer" class="text-area" rows="6"
-        placeholder="Tulis jawaban Anda di sini..."></textarea>
+      <textarea
+        id="textAnswer"
+        class="text-area"
+        rows="6"
+        placeholder="Tulis jawaban Anda di sini..."
+      ></textarea>
       <button id="submitTextAnswer" class="primary-btn submit-btn">
         Kirim Jawaban
       </button>
@@ -50,6 +59,7 @@
       </p>
     </div>
 
+    <!-- HASIL PER PERTANYAAN -->
     <div id="resultCard" class="result-card result-hidden">
       <div class="result-score">
         Skor: <span id="resultScore"></span>/100
@@ -58,8 +68,26 @@
       <p id="resultFeedback"></p>
 
       <div class="result-actions">
-        <button id="nextQuestionBtn" class="secondary-btn">Pertanyaan Berikutnya</button>
-        <a href="{{ url_for('dashboard') }}" class="link-btn">Kembali ke Dashboard</a>
+        <button id="nextQuestionBtn" class="secondary-btn">
+          Pertanyaan Berikutnya
+        </button>
+        <a href="{{ url_for('dashboard') }}" class="link-btn">
+          Kembali ke Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- RINGKASAN AKHIR SESI -->
+    <div id="finalResultCard" class="result-card result-hidden">
+      <h3 class="result-feedback-label">Ringkasan Sesi Wawancara</h3>
+      <p class="result-score">
+        Rata-rata skor: <span id="finalAvgScore"></span>/100
+      </p>
+      <p id="finalOverallFeedback"></p>
+      <div class="result-actions">
+        <a href="{{ url_for('dashboard') }}" class="primary-btn">
+          Kembali ke Dashboard
+        </a>
       </div>
     </div>
   </section>

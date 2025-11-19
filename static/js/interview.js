@@ -20,11 +20,12 @@ if (voiceModeBtn && textModeBtn) {
   });
 }
 
-// ===== TEXT ANSWER HANDLING =====
+// ===== GLOBAL STATE =====
 let currentQuestionIndex = 0;
 
 const questionText = document.getElementById("questionText");
 const questionIndexText = document.getElementById("questionIndexText");
+
 const textAnswer = document.getElementById("textAnswer");
 const submitTextAnswer = document.getElementById("submitTextAnswer");
 
@@ -33,6 +34,11 @@ const resultScore = document.getElementById("resultScore");
 const resultFeedback = document.getElementById("resultFeedback");
 const nextQuestionBtn = document.getElementById("nextQuestionBtn");
 
+const finalResultCard = document.getElementById("finalResultCard");
+const finalAvgScore = document.getElementById("finalAvgScore");
+const finalOverallFeedback = document.getElementById("finalOverallFeedback");
+
+// ===== FUNGSI KIRIM JAWABAN KE BACKEND =====
 async function sendAnswer(answerTextValue) {
   const payload = {
     answer: answerTextValue,
@@ -53,10 +59,12 @@ async function sendAnswer(answerTextValue) {
     return;
   }
 
+  // Tampilkan hasil per pertanyaan
   resultScore.textContent = data.score;
   resultFeedback.textContent = data.feedback;
   resultCard.classList.remove("result-hidden");
 
+  // Jika masih ada pertanyaan berikutnya
   if (data.has_next) {
     nextQuestionBtn.style.display = "inline-flex";
     nextQuestionBtn.onclick = () => {
@@ -64,17 +72,31 @@ async function sendAnswer(answerTextValue) {
       questionText.textContent = data.next_question;
       questionIndexText.textContent =
         "Pertanyaan " + (currentQuestionIndex + 1) + " dari " + TOTAL_QUESTIONS;
-      textAnswer.value = "";
+      if (textAnswer) textAnswer.value = "";
       resultCard.classList.add("result-hidden");
+      // sembunyikan ringkasan kalau sebelumnya kelihatan (harusnya tidak, tapi jaga-jaga)
+      if (finalResultCard) finalResultCard.classList.add("result-hidden");
     };
   } else {
+    // Tidak ada pertanyaan berikutnya: sesi selesai
     nextQuestionBtn.style.display = "none";
+
+    if (data.is_finished && finalResultCard) {
+      if (data.final_avg_score !== null && data.final_avg_score !== undefined) {
+        finalAvgScore.textContent = data.final_avg_score.toFixed(2);
+      } else {
+        finalAvgScore.textContent = "-";
+      }
+      finalOverallFeedback.textContent = data.overall_feedback || "";
+      finalResultCard.classList.remove("result-hidden");
+    }
   }
 }
 
+// ===== HANDLING MODE TEKS =====
 if (submitTextAnswer) {
   submitTextAnswer.addEventListener("click", () => {
-    const value = textAnswer.value.trim();
+    const value = (textAnswer.value || "").trim();
     if (!value) {
       alert("Jawaban teks masih kosong.");
       return;
@@ -83,7 +105,7 @@ if (submitTextAnswer) {
   });
 }
 
-// ===== VOICE ANSWER HANDLING =====
+// ===== HANDLING MODE SUARA (Speech Recognition) =====
 const micButton = document.getElementById("micButton");
 const micLabel = document.getElementById("micLabel");
 const voiceStatus = document.getElementById("voiceStatus");
@@ -104,7 +126,8 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
     isRecording = true;
     recordedText = "";
     micLabel.textContent = "Berhenti Rekam";
-    voiceStatus.textContent = "Merekam... silakan menjawab.";
+    if (voiceStatus)
+      voiceStatus.textContent = "Merekam... silakan menjawab.";
   };
 
   recognition.onresult = (event) => {
@@ -113,7 +136,8 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
       finalTranscript += event.results[i][0].transcript + " ";
     }
     recordedText = finalTranscript.trim();
-    voiceStatus.textContent = 'Hasil rekaman: "' + recordedText + '"';
+    if (voiceStatus)
+      voiceStatus.textContent = 'Hasil rekaman: "' + recordedText + '"';
   };
 
   recognition.onend = () => {
@@ -123,13 +147,14 @@ if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
     if (recordedText) {
       sendAnswer(recordedText);
     } else {
-      voiceStatus.textContent = "Tidak ada suara yang terekam.";
+      if (voiceStatus) voiceStatus.textContent = "Tidak ada suara yang terekam.";
     }
   };
 
   recognition.onerror = (event) => {
     console.error(event.error);
-    voiceStatus.textContent = "Terjadi error saat merekam suara.";
+    if (voiceStatus)
+      voiceStatus.textContent = "Terjadi error saat merekam suara.";
     isRecording = false;
     micLabel.textContent = "Mulai Rekam";
   };

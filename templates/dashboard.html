@@ -6,7 +6,7 @@
     <div>
       <h1 class="page-title">Selamat Datang Kembali, {{ user_name }}!</h1>
       <p class="page-subtitle">
-        Siap untuk latihan berikutnya? Asah kemampuan wawancara Anda dengan Jobify.ai.
+        Asah kemampuan wawancara Anda bersama Jobify.ai. Lihat progres rata-rata skor setiap sesi di bawah ini.
       </p>
     </div>
 
@@ -18,11 +18,11 @@
 
   <section class="cards-row">
     <div class="stat-card">
-      <div class="stat-label">Total Latihan</div>
+      <div class="stat-label">Total Sesi Wawancara</div>
       <div class="stat-value">{{ stats.total_sessions }} Sesi</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Rata-Rata Skor</div>
+      <div class="stat-label">Rata-Rata Skor Semua Sesi</div>
       <div class="stat-value">{{ stats.avg_score }}/100</div>
     </div>
     <div class="stat-card">
@@ -30,46 +30,63 @@
       <div class="stat-value">{{ stats.best_score }}/100</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Latihan Beruntun</div>
+      <div class="stat-label">Latihan Beruntun (Sederhana)</div>
       <div class="stat-value">{{ stats.streak_days }} Hari</div>
     </div>
   </section>
 
   <section class="chart-section">
-    <div class="chart-header">Grafik Perkembangan</div>
-    <canvas id="progressChart"></canvas>
+    <div class="chart-header">Grafik Rata-rata Skor per Sesi</div>
+    <canvas id="sessionAvgChart"></canvas>
+    {% if not scores or scores|length == 0 %}
+    <p class="small-note" style="margin-top: 8px;">
+      Belum ada sesi wawancara yang selesai. Mulai satu sesi untuk melihat grafik perkembangan.
+    </p>
+    {% endif %}
   </section>
 </section>
 {% endblock %}
 
 {% block scripts %}
 <script>
-  const scores = {{ scores | safe }};
-  const ctx = document.getElementById('progressChart');
+  const sessionScores = {{ scores | safe }};
+  const ctx = document.getElementById('sessionAvgChart');
 
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: scores.map((_, i) => 'Sesi ' + (i + 1)),
-      datasets: [{
-        label: 'Nilai',
-        data: scores,
-        fill: false,
-        tension: 0.3
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false }
+  if (sessionScores && sessionScores.length > 0 && ctx) {
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: sessionScores.map((_, i) => 'Sesi ' + (i + 1)),
+        datasets: [{
+          label: 'Rata-rata Skor per Sesi',
+          data: sessionScores,
+          fill: false,
+          tension: 0.3
+        }]
       },
-      scales: {
-        y: {
-          min: 0,
-          max: 100
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            min: 0,
+            max: 100,
+            title: {
+              display: true,
+              text: 'Skor'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Sesi Wawancara'
+            }
+          }
         }
       }
-    }
-  });
+    });
+  }
 </script>
 {% endblock %}
