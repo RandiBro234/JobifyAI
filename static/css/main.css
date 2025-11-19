@@ -575,3 +575,39 @@ body {
 .history-table tr:hover {
   background: #f7f7ff;
 }
+
+
+/* Pagination */
+.pagination {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.page-btn {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #d0d0e6;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: none;
+  color: #33334d;
+  background: #ffffff;
+}
+
+.page-btn:hover {
+  background: #f1f1ff;
+}
+
+.page-btn-active {
+  background: #4f46e5;
+  color: #ffffff;
+  border-color: #4f46e5;
+}
+
+.page-btn-disabled {
+  opacity: 0.4;
+  cursor: default;
+}

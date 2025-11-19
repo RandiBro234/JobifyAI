@@ -1,5 +1,8 @@
 import os
 from datetime import datetime
+from math import ceil
+from io import BytesIO
+
 from flask import (
     Flask,
     render_template,
@@ -8,7 +11,10 @@ from flask import (
     redirect,
     url_for,
     session,
+    send_file,
 )
+
+import pandas as pd
 
 from questions import get_questions_for_role, ROLES
 from answer_keys import get_ideal_answers
@@ -21,7 +27,8 @@ app.config["SECRET_KEY"] = "ganti_ini_dengan_secret_keymu"
 BASE_DIR = os.path.dirname(__file__)
 
 # ========== PENYIMPAN HASIL SESI (IN-MEMORY) ==========
-# Struktur: {"role": "...", "average_score": 87.5, "user_name": "...", "timestamp": "..."}
+# Struktur tiap item:
+# {"role": "...", "average_score": 87.5, "user_name": "...", "timestamp": "..."}
 SESSION_RESULTS = []
 
 
@@ -105,19 +112,79 @@ def dashboard():
     )
 
 
-# ========== RIWAYAT WAWANCARA ==========
+# ========== RIWAYAT WAWANCARA (DENGAN PAGINATION) ==========
 @app.route("/history")
 def history():
     if "user_name" not in session or "user_role" not in session:
         return redirect(url_for("login"))
 
-    # kita tampilkan sesi terbaru di atas (dibalik)
-    sessions = list(reversed(SESSION_RESULTS))
+    # konfigurasi pagination
+    per_page = 5
+    try:
+        page = int(request.args.get("page", 1))
+    except ValueError:
+        page = 1
+    if page < 1:
+        page = 1
+
+    # urutkan: sesi terbaru di atas
+    all_sessions = list(reversed(SESSION_RESULTS))
+    total = len(all_sessions)
+    total_pages = ceil(total / per_page) if total > 0 else 1
+
+    # batasi page agar tidak lebih besar dari total_pages
+    if page > total_pages:
+        page = total_pages
+
+    start = (page - 1) * per_page
+    end = start + per_page
+    page_sessions = all_sessions[start:end]
 
     return render_template(
         "history.html",
-        sessions=sessions,
+        sessions=page_sessions,
         title="Riwayat Wawancara - Jobify.ai",
+        page=page,
+        total_pages=total_pages,
+        total_sessions=total,
+    )
+
+
+# ========== EXPORT RIWAYAT KE EXCEL ==========
+@app.route("/history/export")
+def history_export():
+    if "user_name" not in session or "user_role" not in session:
+        return redirect(url_for("login"))
+
+    if not SESSION_RESULTS:
+        # kalau belum ada data, bisa kembalikan file kosong atau redirect
+        # di sini kita buat file excel dengan 1 sheet kosong
+        df = pd.DataFrame(columns=["Nama", "Role", "Rata-rata Skor", "Waktu"])
+    else:
+        df = pd.DataFrame(
+            [
+                {
+                    "Nama": s["user_name"],
+                    "Role": s["role"],
+                    "Rata-rata Skor": s["average_score"],
+                    "Waktu": s["timestamp"],
+                }
+                for s in SESSION_RESULTS
+            ]
+        )
+
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        df.to_excel(writer, index=False, sheet_name="Riwayat Wawancara")
+
+    output.seek(0)
+    filename = "riwayat_wawancara.xlsx"
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
 

@@ -9,6 +9,10 @@
         Berikut adalah daftar sesi wawancara yang telah Anda selesaikan beserta rata-rata skor setiap sesi.
       </p>
     </div>
+
+    <a href="{{ url_for('history_export') }}" class="secondary-btn">
+      Export ke Excel
+    </a>
   </header>
 
   {% if sessions and sessions|length > 0 %}
@@ -25,7 +29,7 @@
       <tbody>
         {% for s in sessions %}
         <tr>
-          <td>{{ loop.index }}</td>
+          <td>{{ (page - 1) * 5 + loop.index }}</td>
           <td>{{ s.timestamp }}</td>
           <td>{{ s.role }}</td>
           <td>{{ '%.2f'|format(s.average_score) }}/100</td>
@@ -33,6 +37,29 @@
         {% endfor %}
       </tbody>
     </table>
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+      {% if page > 1 %}
+      <a href="{{ url_for('history', page=page-1) }}" class="page-btn">« Prev</a>
+      {% else %}
+      <span class="page-btn page-btn-disabled">« Prev</span>
+      {% endif %}
+
+      {% for p in range(1, total_pages + 1) %}
+      {% if p == page %}
+      <span class="page-btn page-btn-active">{{ p }}</span>
+      {% else %}
+      <a href="{{ url_for('history', page=p) }}" class="page-btn">{{ p }}</a>
+      {% endif %}
+      {% endfor %}
+
+      {% if page < total_pages %}
+      <a href="{{ url_for('history', page=page+1) }}" class="page-btn">Next »</a>
+      {% else %}
+      <span class="page-btn page-btn-disabled">Next »</span>
+      {% endif %}
+    </div>
   </div>
   {% else %}
   <p class="small-note">
