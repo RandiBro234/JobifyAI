@@ -46,9 +46,9 @@
            class="nav-item {% if request.path == '/' %}nav-item-active{% endif %}">
           <span>Dashboard</span>
         </a>
-        <a href="{{ url_for('interview') }}"
-           class="nav-item {% if '/interview' in request.path %}nav-item-active{% endif %}">
-          <span>Hasil dan Feedback</span>
+        <a href="{{ url_for('history') }}"
+           class="nav-item {% if '/history' in request.path %}nav-item-active{% endif %}">
+          <span>Riwayat Wawancara</span>
         </a>
       </nav>
 

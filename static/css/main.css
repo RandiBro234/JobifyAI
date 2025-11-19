@@ -544,3 +544,34 @@ body {
     align-items: flex-start;
   }
 }
+
+
+.history-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  margin-top: 20px;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.history-table th,
+.history-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #ececf5;
+  text-align: left;
+}
+
+.history-table th {
+  font-weight: 600;
+  color: #55556a;
+}
+
+.history-table tr:hover {
+  background: #f7f7ff;
+}

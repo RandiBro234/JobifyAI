@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from flask import (
     Flask,
     render_template,
@@ -20,8 +21,7 @@ app.config["SECRET_KEY"] = "ganti_ini_dengan_secret_keymu"
 BASE_DIR = os.path.dirname(__file__)
 
 # ========== PENYIMPAN HASIL SESI (IN-MEMORY) ==========
-# Setiap sesi wawancara yang selesai akan disimpan di sini sebagai:
-# {"role": "...", "average_score": 87.5}
+# Struktur: {"role": "...", "average_score": 87.5, "user_name": "...", "timestamp": "..."}
 SESSION_RESULTS = []
 
 
@@ -105,6 +105,22 @@ def dashboard():
     )
 
 
+# ========== RIWAYAT WAWANCARA ==========
+@app.route("/history")
+def history():
+    if "user_name" not in session or "user_role" not in session:
+        return redirect(url_for("login"))
+
+    # kita tampilkan sesi terbaru di atas (dibalik)
+    sessions = list(reversed(SESSION_RESULTS))
+
+    return render_template(
+        "history.html",
+        sessions=sessions,
+        title="Riwayat Wawancara - Jobify.ai",
+    )
+
+
 # ========== INTERVIEW ==========
 @app.route("/interview")
 def interview():
@@ -130,7 +146,7 @@ def interview():
     )
 
 
-# ========== API EVALUATE (TF-IDF + COSINE + AVERAGE) ==========
+# ========== API EVALUATE (TF-IDF + COSINE + AVERAGE + HISTORY) ==========
 @app.route("/api/evaluate", methods=["POST"])
 def evaluate_answer():
     if "user_role" not in session:
@@ -146,6 +162,8 @@ def evaluate_answer():
         return jsonify({"success": False, "message": "Jawaban masih kosong."})
 
     role = session.get("user_role", "")
+    user_name = session.get("user_name", "Unknown")
+
     question_list = get_questions_for_role(role)
     if not question_list:
         question_list = get_questions_for_role("default")
@@ -220,6 +238,8 @@ def evaluate_answer():
                 {
                     "role": role,
                     "average_score": round(final_avg_score, 2),
+                    "user_name": user_name,
+                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 }
             )
 

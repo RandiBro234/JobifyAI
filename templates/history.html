@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Riwayat Sesi Wawancara</h1>
+      <p class="page-subtitle">
+        Berikut adalah daftar sesi wawancara yang telah Anda selesaikan beserta rata-rata skor setiap sesi.
+      </p>
+    </div>
+  </header>
+
+  {% if sessions and sessions|length > 0 %}
+  <div class="history-card">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Waktu</th>
+          <th>Role</th>
+          <th>Rata-rata Skor</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sessions %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ s.timestamp }}</td>
+          <td>{{ s.role }}</td>
+          <td>{{ '%.2f'|format(s.average_score) }}/100</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="small-note">
+    Belum ada sesi wawancara yang tersimpan. Silakan mulai satu sesi wawancara terlebih dahulu.
+  </p>
+  {% endif %}
+</section>
+{% endblock %}
